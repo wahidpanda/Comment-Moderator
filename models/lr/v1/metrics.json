@@ -1,0 +1,45 @@
+{
+  "tune": {
+    "estimator": "lr",
+    "C": 1.0,
+    "class_weight": "balanced",
+    "word_ngram_range": [
+      1,
+      2
+    ],
+    "val_f1": 0.593746571585299
+  },
+  "thresholds": {
+    "t_low": 0.45,
+    "t_high": 0.85,
+    "val_macro_f1_proxy": 0.593746571585299,
+    "ambiguous_fraction": 0.08221674110614847
+  },
+  "validation": {
+    "f1": 0.593746571585299,
+    "precision": 0.49687844289386707,
+    "recall": 0.7375306623058054,
+    "roc_auc": 0.9362168782048105,
+    "report": "              precision    recall  f1-score   support\n\n           0       0.98      0.93      0.95     41334\n           1       0.50      0.74      0.59      3669\n\n    accuracy                           0.92     45003\n   macro avg       0.74      0.84      0.77     45003\nweighted avg       0.94      0.92      0.92     45003\n"
+  },
+  "n_train": 210014,
+  "n_val": 45003,
+  "n_rows": 300020,
+  "harmful_rate_train": 0.08152313655280125,
+  "heads": [
+    "toxicity",
+    "insult",
+    "threat",
+    "identity_attack"
+  ],
+  "identity_augment_rows": 20,
+  "train_seconds": 1911.1666613000125,
+  "test": {
+    "f1": 0.6019889502762431,
+    "precision": 0.5061315496098104,
+    "recall": 0.742639040348964,
+    "roc_auc": 0.9390038457484717,
+    "report": "              precision    recall  f1-score   support\n\n           0       0.98      0.94      0.96     41335\n           1       0.51      0.74      0.60      3668\n\n    accuracy                           0.92     45003\n   macro avg       0.74      0.84      0.78     45003\nweighted avg       0.94      0.92      0.93     45003\n"
+  },
+  "n_test": 45003
+}

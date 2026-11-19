@@ -1,0 +1,7 @@
+id,text,label_expected,source
+h1,You'll regret uploading this.,threat,creator_holdout
+h2,Die mad about it.,threat,creator_holdout
+h3,I'll doxx your contributors.,threat,creator_holdout
+h4,Threat lite: you'll regret this upload.,threat,creator_holdout
+h5,Someone might pay you a visit at night.,threat,synthetic_holdout
+h6,Keep your doors locked this week.,threat,synthetic_holdout

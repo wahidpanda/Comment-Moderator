@@ -1,0 +1,1 @@
+"""FastAPI backend. Implemented in Phase 2."""

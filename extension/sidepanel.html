@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Moderation summary</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 12px;
+        font-size: 13px;
+      }
+      h1 {
+        font-size: 16px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .hint {
+        color: #444;
+        line-height: 1.45;
+        font-size: 12px;
+      }
+      .error {
+        color: #b91c1c;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .meta {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Summary</h1>
+    <div id="root">Run Analyze on the page.</div>
+    <script type="module" src="/src/sidepanel.ts"></script>
+  </body>
+</html>

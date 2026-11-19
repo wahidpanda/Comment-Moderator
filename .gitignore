@@ -1,0 +1,63 @@
+# Data (reproducible via make download / make train)
+/data/*
+!data/.gitkeep
+
+# Models: ship LR v1; ignore other trained artifacts
+/models/*
+!/models/lr/
+!/models/lr/v1/
+!/models/lr/v1/**
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+uv.lock
+
+# Environment
+.env
+.env.local
+
+# Node (later phases)
+node_modules/
+.next/
+dist/
+*.local
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Kaggle
+kaggle.json
+
+# Logs
+*.log
+
+# Local dev / acceptance helpers (not part of the product)
+scripts/_debug_*
+scripts/_accept_*
+scripts/_health_snapshot.py
+
+# Large or generated research dumps
+docs/spam_layer_decisions*.csv
+docs/regression_run_log.txt
+docs/eval_metrics_before*.json
+
+# OpenRouter local cache / one-shot key snapshot
+docs/cache/
+data/llm_cache.sqlite
+data/*.sqlite
+web/data/
+**/moderator.db
+**/openrouter_key_response.json
+extension/data/

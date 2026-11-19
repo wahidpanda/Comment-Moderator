@@ -1,0 +1,51 @@
+# Rule layer — identity terms alone must NEVER flag (see engine/rules.py).
+
+spam:
+  patterns:
+    - "(?i)\\b(buy now|click here|free money|dm me|telegram\\.me|whatsapp me)\\b"
+    - "(?i)\\b(crypto giveaway|nft drop|investment opportunity)\\b"
+  link_heavy:
+    min_links: 3
+    min_length: 20
+
+threat:
+  patterns:
+    - "(?i)\\b(i will kill|i'll kill|gonna kill|die\\s+bitch|murder you)\\b"
+    - "(?i)\\b(bomb your|shoot you|burn your house)\\b"
+    - "(?i)\\bwatch your back\\b"
+    - "(?i)\\bi will find you\\b"
+    - "(?i)\\bhope your house (burns|floods)\\b"
+
+scam:
+  patterns:
+    - "(?i)\\b(send (me )?your (password|ssn|seed phrase))\\b"
+    - "(?i)\\b(wire transfer|western union)\\b"
+
+repeated:
+  min_duplicates: 4
+  window: 50
+
+# Mentioned for audit slicing only — not blocklist triggers
+identity_terms:
+  - gay
+  - lesbian
+  - trans
+  - muslim
+  - jewish
+  - black
+  - white
+  - asian
+  - immigrant
+
+praise:
+  patterns:
+    - "(?i)\\b(thank you|thanks|great video|well done|love this|awesome|amazing work)\\b"
+
+question:
+  patterns:
+    - "(?i)^(what|how|why|when|where|who|can you|could you|is there|does )"
+  require_question_mark: false
+
+critique:
+  patterns:
+    - "(?i)\\b(disagree|wrong about|misleading|not true|bad take)\\b"

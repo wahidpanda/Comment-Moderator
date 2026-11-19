@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root.light {
+  --bg: #f4f5f8;
+  --fg: #0f1419;
+  --muted: #5c6570;
+  --border: rgba(15, 20, 25, 0.1);
+  --surface: #ffffff;
+  --surface-2: #eef0f4;
+  --accent: #4f46e5;
+  --accent-soft: rgba(79, 70, 229, 0.1);
+  --danger: #dc2626;
+  --header: rgba(255, 255, 255, 0.85);
+  --video-frame-a: rgba(79, 70, 229, 0.75);
+  --video-frame-b: rgba(236, 72, 153, 0.55);
+}
+
+:root.dark {
+  --bg: #090a0f;
+  --fg: #f4f4f5;
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.08);
+  --surface: rgba(255, 255, 255, 0.03);
+  --surface-2: rgba(0, 0, 0, 0.35);
+  --accent: #6366f1;
+  --accent-soft: rgba(99, 102, 241, 0.15);
+  --danger: #f87171;
+  --header: rgba(9, 10, 15, 0.9);
+  --video-frame-a: rgba(99, 102, 241, 0.85);
+  --video-frame-b: rgba(236, 72, 153, 0.65);
+}
+
+body {
+  @apply bg-[var(--bg)] text-fg antialiased;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-border bg-surface shadow-sm;
+  }
+
+  .btn-primary {
+    @apply rounded-xl bg-accent px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-ghost {
+    @apply rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg transition;
+  }
+
+  .btn-ghost:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+
+  .input-field {
+    @apply rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-sm text-fg placeholder:text-muted focus:outline-none;
+  }
+
+  .input-field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+
+  .video-frame {
+    @apply rounded-2xl p-[3px];
+    background: linear-gradient(
+      135deg,
+      var(--video-frame-a),
+      var(--video-frame-b),
+      rgba(45, 212, 191, 0.45)
+    );
+    box-shadow: 0 20px 40px -24px var(--video-frame-a);
+  }
+
+  .video-frame__inner {
+    @apply overflow-hidden rounded-[calc(1rem-2px)] bg-[var(--bg)] ring-1 ring-border;
+  }
+}
