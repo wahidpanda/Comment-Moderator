@@ -8,8 +8,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         background: resolve(__dirname, "src/background.ts"),
-        youtube: resolve(__dirname, "src/content/youtube.ts"),
-        linkedin: resolve(__dirname, "src/content/linkedin.ts"),
         sidepanel: resolve(__dirname, "sidepanel.html"),
       },
       output: {

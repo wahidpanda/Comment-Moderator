@@ -432,17 +432,20 @@ export default function AnalyzePage() {
   }
 
   return (
-    <div className="space-y-5">
-      <section className="panel flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1">
-          <h1 className="text-lg font-semibold tracking-tight text-fg">Analyze YouTube</h1>
-          <p className="mt-0.5 text-xs text-muted">
-            Watch, Shorts, or regular links · LLM summary · history saved locally
+    <div className="space-y-6">
+      <section className="panel-hero flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative z-[1] min-w-0 max-w-xl">
+          <p className="section-kicker">Creator triage</p>
+          <h1 className="page-title mt-2">Analyze YouTube comments</h1>
+          <p className="page-lead">
+            Hybrid rules, LR, and Detoxify — plus optional LLM buckets, insights, and reply drafts. Nothing is posted
+            or deleted automatically.
           </p>
         </div>
-        <div className="flex w-full flex-col gap-2 sm:max-w-xl sm:flex-row">
+        <div className="relative z-[1] flex w-full flex-col gap-3 sm:max-w-lg">
+          <div className="flex flex-col gap-2 sm:flex-row">
           <input
-            className="input-field min-w-0 flex-1"
+            className="input-field min-w-0 flex-1 shadow-sm"
             placeholder="youtube.com/watch?v=… or /shorts/…"
             value={url}
             onChange={(e) => setUrl(sanitizeYouTubeInput(e.target.value))}
@@ -463,8 +466,34 @@ export default function AnalyzePage() {
             disabled={loading || !videoId}
             className="btn-primary shrink-0"
           >
-            {loading ? "Analyzing…" : "Analyze"}
+            {loading ? "Analyzing…" : "Analyze video"}
           </button>
+          </div>
+          {results.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div className="stat-tile">
+                <strong>{String(summary.total ?? results.length)}</strong>
+                <span>Comments</span>
+              </div>
+              <div className="stat-tile">
+                <strong>{needsHuman}</strong>
+                <span>Needs review</span>
+              </div>
+              <div className="stat-tile">
+                <strong>
+                  {Number(summary.transformer_threat_scan_pct ?? 0) <= 1
+                    ? Math.round(Number(summary.transformer_threat_scan_pct ?? 0) * 100)
+                    : Math.round(Number(summary.transformer_threat_scan_pct ?? 0))}
+                  %
+                </strong>
+                <span>Threat scanned</span>
+              </div>
+              <div className="stat-tile">
+                <strong>{dailyLlmUsed ?? "—"}</strong>
+                <span>LLM reqs today</span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -665,13 +694,13 @@ export default function AnalyzePage() {
                   <div className="flex flex-wrap gap-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                        insights.source === "llm" ? "bg-accent-soft text-accent" : "bg-surface-3 text-muted"
+                        insights.source === "llm" ? "bg-accent-soft text-accent" : "border border-border bg-surface-2 text-muted"
                       }`}
                     >
                       {insights.source === "llm" ? "AI" : "Heuristic"}
                     </span>
                     {insights.cache_hit && (
-                      <span className="rounded-full bg-surface-3 px-2 py-0.5 text-[10px] text-muted">cached</span>
+                      <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 text-[10px] text-muted">cached</span>
                     )}
                     {insights.llm_requests > 0 && (
                       <span className="text-[10px] text-muted">{insights.llm_requests} LLM req</span>
@@ -751,7 +780,7 @@ export default function AnalyzePage() {
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span
                           className={`rounded px-1.5 py-0.5 text-[10px] ${
-                            item.result.source === "llm" ? "bg-accent-soft text-accent" : "bg-surface-3 text-muted"
+                            item.result.source === "llm" ? "bg-accent-soft text-accent" : "border border-border bg-surface-2 text-muted"
                           }`}
                         >
                           {item.result.source === "llm" ? "AI" : "Heuristic"}
@@ -837,10 +866,10 @@ export default function AnalyzePage() {
                   ref={(el) => {
                     commentRefs.current[r.id] = el;
                   }}
-                  className={`rounded-xl border px-3 py-3 transition ${
+                  className={`comment-card ${
                     focusCommentId === r.id
-                      ? "border-sky-500 bg-sky-500/10 ring-2 ring-sky-500/40"
-                      : "border-border bg-surface-2"
+                      ? "!border-sky-500/60 bg-sky-500/10 ring-2 ring-sky-500/30"
+                      : ""
                   }`}
                 >
                   <div className="mb-2 flex flex-wrap items-center gap-2">

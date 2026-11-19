@@ -127,8 +127,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-fg">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted">Latest analysis session and offline model evaluation metrics.</p>
+        <p className="section-kicker">Metrics &amp; trust</p>
+        <h1 className="page-title mt-2">Dashboard</h1>
+        <p className="page-lead">Latest analysis session and offline model evaluation metrics.</p>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -313,10 +314,10 @@ export default function DashboardPage() {
 
 function StatCard({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
-    <div className="panel p-4">
-      <p className="text-xs font-medium uppercase tracking-wider text-muted">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-fg">{value}</p>
-      <p className="mt-1 text-xs text-muted">{hint}</p>
+    <div className="stat-tile panel !rounded-2xl p-5">
+      <span>{label}</span>
+      <strong className="!mt-2 !text-3xl">{value}</strong>
+      <p className="mt-2 text-xs text-muted">{hint}</p>
     </div>
   );
 }

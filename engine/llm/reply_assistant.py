@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, ValidationError
 from engine.llm.cache import CacheContext, cache_key, get_cached, put_cached
 from engine.llm.client import LLMClient, LLMError, LLMNoEndpointsError, LLMQuotaError, LLMParseError
 from engine.llm.config import load_openrouter_config
-from engine.llm.parse import strip_llm_json_wrapper
+from engine.llm.parse import loads_llm_json
 from engine.llm.prompt import wrap_comment
 
 logger = logging.getLogger(__name__)
@@ -215,8 +215,7 @@ def suggest_replies(
 
 
 def _parse_reply_items(content: str, expected_ids: set[str]) -> list[_ReplyItemOut]:
-    text = strip_llm_json_wrapper(content)
-    data = json.loads(text)
+    data = loads_llm_json(content)
     if isinstance(data, dict) and "items" in data:
         data = data["items"]
     if not isinstance(data, list):

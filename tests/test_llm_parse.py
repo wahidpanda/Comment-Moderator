@@ -6,7 +6,7 @@ import pytest
 
 from engine.llm.client import LLMClient, LLMParseError
 from engine.llm.config import OpenRouterConfig
-from engine.llm.parse import strip_llm_json_wrapper
+from engine.llm.parse import loads_llm_json, strip_llm_json_wrapper
 
 
 @pytest.fixture
@@ -57,6 +57,22 @@ def test_parse_items_bare_fenced(cfg: OpenRouterConfig) -> None:
     content = '```\n{"items": [{"id": "y", "label": "neutral", "needs_human": false, "reasons": []}]}\n```'
     items = client._parse_items(content, {"y"})
     assert items[0].label == "neutral"
+
+
+def test_loads_llm_json_unquoted_keys_and_trailing_comma() -> None:
+    raw = """```json
+{
+  "items": [
+    {
+      id: "c1",
+      suggested_reply: "Thanks for watching!",
+      notes: [],
+    },
+  ]
+}
+```"""
+    data = loads_llm_json(raw)
+    assert data["items"][0]["id"] == "c1"
 
 
 def test_parse_id_mismatch(cfg: OpenRouterConfig) -> None:

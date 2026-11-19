@@ -14,31 +14,38 @@ export function HistoryRail({ items, activeId, onSelect, onRemove, onReanalyze }
   if (items.length === 0) return null;
 
   return (
-    <section className="panel p-3">
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Recent videos</h2>
-        <span className="text-xs text-muted">{items.length}</span>
+    <section className="panel p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="section-kicker">Recent videos</h2>
+        <span className="rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
+          {items.length}
+        </span>
       </div>
-      <ul className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+      <ul className="scrollbar-thin flex gap-3 overflow-x-auto pb-1">
         {items.map((h) => {
           const active = h.videoId === activeId;
           return (
             <li
               key={h.videoId}
-              className={`flex w-44 shrink-0 flex-col gap-1 rounded-xl border p-2 transition ${
-                active ? "border-accent bg-accent-soft" : "border-border bg-surface-2"
+              className={`flex w-48 shrink-0 flex-col gap-2 rounded-2xl border p-2.5 transition ${
+                active
+                  ? "border-accent/50 bg-accent-soft shadow-md"
+                  : "border-border bg-surface-2 hover:border-accent/30"
               }`}
             >
               <button type="button" onClick={() => onSelect(h)} className="text-left">
-                <img
-                  src={h.thumbnail_url}
-                  alt=""
-                  className="mb-1 aspect-video w-full rounded-lg object-cover"
-                />
-                <p className="line-clamp-2 text-[11px] font-medium leading-snug text-fg">{h.title}</p>
-                <p className="text-[10px] text-muted">{new Date(h.lastAnalyzedAt).toLocaleString()}</p>
+                <div className="relative mb-2 overflow-hidden rounded-xl">
+                  <img src={h.thumbnail_url} alt="" className="aspect-video w-full object-cover" />
+                  {active && (
+                    <span className="absolute bottom-1.5 left-1.5 rounded-md bg-accent px-1.5 py-0.5 text-[9px] font-bold text-white">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <p className="line-clamp-2 text-xs font-semibold leading-snug text-fg">{h.title}</p>
+                <p className="mt-1 text-[10px] text-muted">{new Date(h.lastAnalyzedAt).toLocaleString()}</p>
               </button>
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 <button type="button" onClick={() => onReanalyze(h)} className="btn-ghost flex-1 !py-1 !text-[10px]">
                   Refresh
                 </button>

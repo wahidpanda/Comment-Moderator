@@ -74,7 +74,10 @@ def get_cached(key: str, *, db_path: Path | None = None) -> dict[str, Any] | Non
         ).fetchone()
     if not row:
         return None
-    return json.loads(row["response_json"])
+    try:
+        return json.loads(row["response_json"])
+    except json.JSONDecodeError:
+        return None
 
 
 def put_cached(

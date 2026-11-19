@@ -9,7 +9,7 @@ const HINT = `Nothing analyzed for this browser session yet.
 
 1. Keep the local API running (python -m api.main on port 8000).
 2. On the YouTube video tab, scroll until comments load.
-3. Click the purple **Analyze comments** button (bottom-right of the page).
+3. Click the purple **Analyze comments** button (bottom-left of the page).
 
 Opening the toolbar icon only shows this panel — it does not scrape comments.`;
 

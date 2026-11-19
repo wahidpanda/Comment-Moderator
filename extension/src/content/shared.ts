@@ -40,9 +40,9 @@ export function mountAnalyzeButton(label: string, onClick: () => void): void {
   btn.textContent = label;
   Object.assign(btn.style, {
     position: "fixed",
-    bottom: "16px",
-    right: "16px",
-    zIndex: "99999",
+    bottom: "24px",
+    left: "24px",
+    zIndex: "2147483647",
     padding: "10px 14px",
     background: "#4f46e5",
     color: "#fff",

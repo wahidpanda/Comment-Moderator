@@ -20,7 +20,7 @@ from engine.llm.config import (
     resolve_openrouter_bucket_models,
     resolve_openrouter_models,
 )
-from engine.llm.parse import strip_llm_json_wrapper
+from engine.llm.parse import loads_llm_json, strip_llm_json_wrapper
 from engine.llm.prompt import (
     CREATOR_BUCKETS,
     MODERATION_V3_VERSION,
@@ -106,8 +106,7 @@ class LLMClient:
         return h
 
     def _parse_items(self, content: str, expected_ids: set[str]) -> list[ModerationItemOut]:
-        text = strip_llm_json_wrapper(content)
-        data = json.loads(text)
+        data = loads_llm_json(content)
         if isinstance(data, dict) and "items" in data:
             data = data["items"]
         if not isinstance(data, list):
@@ -266,8 +265,7 @@ class LLMClient:
         return ordered, metas
 
     def _parse_creator_items(self, content: str, expected_ids: set[str]) -> list[CreatorBucketItemOut]:
-        text = strip_llm_json_wrapper(content)
-        data = json.loads(text)
+        data = loads_llm_json(content)
         if isinstance(data, dict) and "items" in data:
             data = data["items"]
         if not isinstance(data, list):
@@ -279,8 +277,7 @@ class LLMClient:
         return items
 
     def _parse_creator_items_partial(self, content: str) -> list[CreatorBucketItemOut]:
-        text = strip_llm_json_wrapper(content)
-        data = json.loads(text)
+        data = loads_llm_json(content)
         if isinstance(data, dict) and "items" in data:
             data = data["items"]
         if not isinstance(data, list):

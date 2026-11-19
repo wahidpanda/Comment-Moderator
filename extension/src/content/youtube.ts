@@ -51,6 +51,14 @@ async function analyzePage(): Promise<void> {
   }
 }
 
-mountAnalyzeButton("Analyze comments", () => {
-  void analyzePage();
-});
+function boot(): void {
+  mountAnalyzeButton("Analyze comments", () => {
+    void analyzePage();
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot, { once: true });
+} else {
+  boot();
+}
