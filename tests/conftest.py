@@ -77,3 +77,4 @@ def _configure_lr_fixture() -> None:
     os.environ["LR_MODEL_PATH"] = str(FIXTURE_MODEL_DIR / "model.joblib")
     os.environ["LR_THRESHOLDS_PATH"] = str(FIXTURE_MODEL_DIR / "thresholds.json")
     os.environ["USE_TRANSFORMER"] = "false"
+    os.environ["LLM_BACKEND"] = "openrouter"

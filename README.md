@@ -19,7 +19,27 @@ Stack: YAML rules → sklearn logistic regression → optional **Detoxify** (CPU
 | Node.js | 18+ (web UI) |
 | OS | Windows, macOS, or Linux |
 
-Optional: [YouTube Data API key](https://console.cloud.google.com/), [OpenRouter](https://openrouter.ai/) key for LLM features.
+Optional: [YouTube Data API key](https://console.cloud.google.com/). For LLM features use **local Ollama** (no API key, unlimited) or [OpenRouter](https://openrouter.ai/).
+
+### Local LLM (recommended for dev — no daily cap)
+
+1. Install [Ollama](https://ollama.com/download).
+2. Pull a model (≈8B; closest to “Llama 3.2 8B” on HF):
+
+```bash
+ollama pull llama3.1:8b
+```
+
+3. In `.env`:
+
+```env
+LLM_BACKEND=local
+LOCAL_LLM_BASE_URL=http://127.0.0.1:11434/v1
+LOCAL_LLM_MODEL=llama3.1:8b
+USE_LLM=true
+```
+
+OpenRouter keys are ignored while `LLM_BACKEND=local`. Smaller GPUs: `llama3.2:3b`.
 
 ## Installation (local)
 

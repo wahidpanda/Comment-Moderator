@@ -47,6 +47,23 @@ class RateLimiter:
             self._times.append(time.monotonic())
 
 
+class LocalBudgetGuard:
+    """Rate limit only — no OpenRouter daily cap (for Ollama / local servers)."""
+
+    def __init__(self, *, rpm: int = 60) -> None:
+        self.limiter = RateLimiter(rpm)
+
+    def fetch_key_limits(self, *, force: bool = False) -> KeyLimits:
+        return KeyLimits(None, None, None, {"source": "local"})
+
+    def check_can_request(self) -> None:
+        return
+
+    def record_request(self) -> int:
+        self.limiter.wait_turn()
+        return increment_daily_requests()
+
+
 class BudgetGuard:
     def __init__(
         self,

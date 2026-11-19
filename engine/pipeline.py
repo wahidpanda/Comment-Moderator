@@ -143,11 +143,17 @@ class ModerationPipeline:
     def _resolve_llm_skip_reason(self, *, batch_failed: bool = False) -> str:
         if not self.use_llm:
             return "use_llm_disabled"
-        cfg = load_openrouter_config()
-        if not cfg.api_key:
-            return "openrouter_api_key_missing"
-        if not resolve_openrouter_models(cfg):
-            return "openrouter_models_unconfigured"
+        from engine.llm.backends import llm_backend, llm_configured
+
+        if llm_backend() == "local":
+            if not llm_configured():
+                return "local_llm_unreachable"
+        else:
+            cfg = load_openrouter_config()
+            if not cfg.api_key:
+                return "openrouter_api_key_missing"
+            if not resolve_openrouter_models(cfg):
+                return "openrouter_models_unconfigured"
         if batch_failed:
             return "llm_batch_failed"
         return "llm_unavailable"

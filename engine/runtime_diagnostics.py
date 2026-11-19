@@ -103,12 +103,27 @@ def collect_runtime_status(*, probe_lr: bool = True) -> dict[str, Any]:
                 status["transformer_runtime_error"] = (
                     "USE_TRANSFORMER=true but detoxify not installed"
                 )
-            if status["use_llm"] and status["openrouter_api_key_set"]:
+            if status["use_llm"]:
                 try:
-                    from engine.llm_layer import LLMLayer
+                    from engine.llm.backends import llm_backend, llm_configured, local_llm_model, probe_local_llm
 
-                    LLMLayer(enabled=True)._client_or_raise()
-                    status["llm_layer_configured"] = True
+                    status["llm_backend"] = llm_backend()
+                    if llm_backend() == "local":
+                        status["local_llm_model"] = local_llm_model()
+                        status["local_llm_reachable"] = probe_local_llm()
+                        status["llm_layer_configured"] = llm_configured()
+                        if not status["llm_layer_configured"]:
+                            status["llm_layer_error"] = (
+                                "LOCAL LLM unreachable — install Ollama and run: ollama pull "
+                                f"{local_llm_model()}"
+                            )
+                    elif status["openrouter_api_key_set"]:
+                        from engine.llm_layer import LLMLayer
+
+                        LLMLayer(enabled=True)._client_or_raise()
+                        status["llm_layer_configured"] = True
+                    else:
+                        status["llm_layer_error"] = "OPENROUTER_API_KEY not set"
                 except Exception as exc:
                     status["llm_layer_error"] = str(exc)
         except FileNotFoundError as exc:

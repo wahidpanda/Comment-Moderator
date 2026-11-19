@@ -12,7 +12,14 @@ from typing import Any
 import httpx
 from pydantic import BaseModel, Field, ValidationError
 
-from engine.llm.budget import BudgetGuard
+from engine.llm.backends import (
+    llm_backend,
+    local_llm_api_key,
+    local_llm_base_url,
+    local_llm_bucket_model,
+    local_llm_model,
+)
+from engine.llm.budget import BudgetGuard, LocalBudgetGuard
 from engine.llm.cache import CacheContext, cache_key, get_cached, put_cached
 from engine.llm.config import (
     OpenRouterConfig,
@@ -77,32 +84,45 @@ class LLMCallMeta:
 class LLMClient:
     def __init__(self, config: OpenRouterConfig | None = None) -> None:
         self.config = config or load_openrouter_config()
-        if not self.config.api_key:
-            raise LLMError("OPENROUTER_API_KEY not set")
-        self._budget = BudgetGuard(
-            api_key=self.config.api_key,
-            base_url=self.config.base_url,
-            max_requests_per_day=self.config.max_requests_per_day,
-            buffer=self.config.daily_request_buffer,
-            rpm=self.config.requests_per_minute,
-            log_key_once=self.config.log_key_response_once,
-        )
+        self._use_local = llm_backend() == "local" and config is None
+        if self._use_local:
+            self._budget = LocalBudgetGuard(rpm=self.config.requests_per_minute)
+        else:
+            if not self.config.api_key:
+                raise LLMError("OPENROUTER_API_KEY not set")
+            self._budget = BudgetGuard(
+                api_key=self.config.api_key,
+                base_url=self.config.base_url,
+                max_requests_per_day=self.config.max_requests_per_day,
+                buffer=self.config.daily_request_buffer,
+                rpm=self.config.requests_per_minute,
+                log_key_once=self.config.log_key_response_once,
+            )
+
+    def _chat_base_url(self) -> str:
+        if self._use_local:
+            return local_llm_base_url()
+        return self.config.base_url
 
     def _provider_extra(self) -> dict[str, Any]:
+        if self._use_local:
+            return {}
         provider: dict[str, Any] = {"data_collection": self.config.data_collection}
         if self.config.zdr:
             provider["zdr"] = True
         return {"provider": provider}
 
     def _headers(self) -> dict[str, str]:
+        key = local_llm_api_key() if self._use_local else self.config.api_key
         h = {
-            "Authorization": f"Bearer {self.config.api_key}",
+            "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
         }
-        if self.config.http_referer:
-            h["HTTP-Referer"] = self.config.http_referer
-        if self.config.app_name:
-            h["X-Title"] = self.config.app_name
+        if not self._use_local:
+            if self.config.http_referer:
+                h["HTTP-Referer"] = self.config.http_referer
+            if self.config.app_name:
+                h["X-Title"] = self.config.app_name
         return h
 
     def _parse_items(self, content: str, expected_ids: set[str]) -> list[ModerationItemOut]:
@@ -118,6 +138,8 @@ class LLMClient:
         return items
 
     def _resolved_models(self) -> tuple[str, ...]:
+        if self._use_local:
+            return (local_llm_model(),)
         return resolve_openrouter_models(self.config)
 
     def _chat(
@@ -128,22 +150,23 @@ class LLMClient:
         system: str,
     ) -> tuple[str, dict[str, Any]]:
         self._budget.check_can_request()
-        body = {
-            "model": model,
+        body: dict[str, Any] = {
+            "model": local_llm_model() if self._use_local else model,
             "messages": [
                 {"role": "system", "content": system},
                 {"role": "user", "content": user_content},
             ],
-            "response_format": {"type": "json_object"},
             **self._provider_extra(),
         }
+        if not self._use_local:
+            body["response_format"] = {"type": "json_object"}
         last_err: Exception | None = None
         for attempt in range(MAX_RETRIES + 1):
             self._budget.record_request()
             try:
-                with httpx.Client(timeout=120.0) as client:
+                with httpx.Client(timeout=300.0 if self._use_local else 120.0) as client:
                     resp = client.post(
-                        f"{self.config.base_url}/chat/completions",
+                        f"{self._chat_base_url()}/chat/completions",
                         headers=self._headers(),
                         json=body,
                     )
@@ -152,11 +175,15 @@ class LLMClient:
                     time.sleep(min(max(retry_after, 1.0), 60.0) * (attempt + 1))
                     last_err = LLMError(f"429 rate limited: {resp.text[:200]}")
                     continue
-                if resp.status_code in (402, 403):
+                if not self._use_local and resp.status_code in (402, 403):
                     raise LLMQuotaError(resp.text[:500])
                 if resp.status_code >= 400:
                     msg = resp.text[:500]
-                    if "endpoint" in msg.lower() and self.config.data_collection == "deny":
+                    if (
+                        not self._use_local
+                        and "endpoint" in msg.lower()
+                        and self.config.data_collection == "deny"
+                    ):
                         raise LLMNoEndpointsError(msg)
                     raise LLMError(f"HTTP {resp.status_code}: {msg}")
                 raw = resp.json()
@@ -285,6 +312,8 @@ class LLMClient:
         return [CreatorBucketItemOut.model_validate(x) for x in data]
 
     def _resolved_bucket_models(self) -> tuple[str, ...]:
+        if self._use_local:
+            return (local_llm_bucket_model(),)
         return resolve_openrouter_bucket_models(self.config)
 
     def _chat_bucket_batch(

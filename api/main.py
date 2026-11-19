@@ -106,17 +106,24 @@ def health() -> dict[str, object]:
             if getattr(r, "path", None) and "{" not in r.path and r.path.startswith("/")
         }
     )
+    from engine.llm.backends import (
+        llm_backend,
+        llm_configured,
+        probe_local_llm,
+        resolve_llm_bucket_models,
+        resolve_llm_moderation_models,
+    )
+
     cfg = load_openrouter_config()
-    mod_models = resolve_openrouter_models(cfg)
-    bucket_models = resolve_openrouter_bucket_models(cfg)
+    mod_models = resolve_llm_moderation_models(cfg)
+    bucket_models = resolve_llm_bucket_models(cfg)
+    llm_ok = llm_configured()
     moderation_llm_enabled = (
-        os.getenv("USE_LLM", "false").lower() == "true"
-        and bool(cfg.api_key)
-        and bool(mod_models)
+        os.getenv("USE_LLM", "false").lower() == "true" and llm_ok and bool(mod_models)
     )
     bucket_llm_enabled = (
         os.getenv("USE_CREATOR_BUCKETS_LLM", "true").lower() == "true"
-        and bool(cfg.api_key)
+        and llm_ok
         and bool(bucket_models)
     )
     return {
@@ -126,6 +133,8 @@ def health() -> dict[str, object]:
         "lr_model_loaded": lr_ok,
         "moderation_llm_enabled": moderation_llm_enabled,
         "bucket_llm_enabled": bucket_llm_enabled,
+        "llm_backend": llm_backend(),
+        "local_llm_reachable": probe_local_llm() if llm_backend() == "local" else None,
         "openrouter_moderation_models": list(mod_models),
         "openrouter_bucket_models": list(bucket_models),
         "bucket_definitions": BUCKET_ONE_LINERS,

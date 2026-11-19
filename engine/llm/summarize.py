@@ -7,7 +7,14 @@ import os
 
 import httpx
 
-from engine.llm.budget import BudgetGuard
+from engine.llm.backends import (
+    llm_backend,
+    local_llm_api_key,
+    local_llm_base_url,
+    local_llm_model,
+    probe_local_llm,
+)
+from engine.llm.budget import BudgetGuard, LocalBudgetGuard
 from engine.llm.config import load_openrouter_config
 
 logger = logging.getLogger(__name__)
@@ -49,47 +56,68 @@ def _pick_model() -> str | None:
 def summarize_video_llm(title: str, description: str, channel: str) -> tuple[str, str]:
     """Return (summary text, source: llm | extractive)."""
     extractive = _extractive_summary(title, description)
-    model = _pick_model()
     cfg = load_openrouter_config()
-    if not cfg.api_key or not model:
-        return extractive, "extractive"
-
     desc = description[:6000] if description else ""
     user = (
         f"Channel: {channel}\nTitle: {title}\n\nDescription:\n{desc or '(no description)'}\n\n"
         "Summarize this video."
     )
-    budget = BudgetGuard(
-        api_key=cfg.api_key,
-        base_url=cfg.base_url,
-        max_requests_per_day=cfg.max_requests_per_day,
-        buffer=cfg.daily_request_buffer,
-        rpm=cfg.requests_per_minute,
-        log_key_once=cfg.log_key_response_once,
-    )
-    headers = {
-        "Authorization": f"Bearer {cfg.api_key}",
-        "Content-Type": "application/json",
-    }
-    if cfg.app_name:
-        headers["X-Title"] = cfg.app_name
-    if cfg.http_referer:
-        headers["HTTP-Referer"] = cfg.http_referer
-    body = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": _SUMMARY_SYSTEM},
-            {"role": "user", "content": user},
-        ],
-        "max_tokens": 320,
-        "provider": {"data_collection": cfg.data_collection},
-    }
+
+    if llm_backend() == "local":
+        if not probe_local_llm():
+            return extractive, "extractive"
+        model = local_llm_model()
+        budget = LocalBudgetGuard(rpm=cfg.requests_per_minute)
+        headers = {
+            "Authorization": f"Bearer {local_llm_api_key()}",
+            "Content-Type": "application/json",
+        }
+        base = local_llm_base_url()
+        body = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": _SUMMARY_SYSTEM},
+                {"role": "user", "content": user},
+            ],
+            "max_tokens": 320,
+        }
+    else:
+        model = _pick_model()
+        if not cfg.api_key or not model:
+            return extractive, "extractive"
+        budget = BudgetGuard(
+            api_key=cfg.api_key,
+            base_url=cfg.base_url,
+            max_requests_per_day=cfg.max_requests_per_day,
+            buffer=cfg.daily_request_buffer,
+            rpm=cfg.requests_per_minute,
+            log_key_once=cfg.log_key_response_once,
+        )
+        headers = {
+            "Authorization": f"Bearer {cfg.api_key}",
+            "Content-Type": "application/json",
+        }
+        if cfg.app_name:
+            headers["X-Title"] = cfg.app_name
+        if cfg.http_referer:
+            headers["HTTP-Referer"] = cfg.http_referer
+        base = cfg.base_url
+        body = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": _SUMMARY_SYSTEM},
+                {"role": "user", "content": user},
+            ],
+            "max_tokens": 320,
+            "provider": {"data_collection": cfg.data_collection},
+        }
+
     try:
         budget.check_can_request()
         budget.record_request()
-        with httpx.Client(timeout=90.0) as client:
+        with httpx.Client(timeout=120.0) as client:
             resp = client.post(
-                f"{cfg.base_url}/chat/completions",
+                f"{base}/chat/completions",
                 headers=headers,
                 json=body,
             )
